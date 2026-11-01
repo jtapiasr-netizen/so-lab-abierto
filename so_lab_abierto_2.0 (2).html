@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SO Lab Abierto | Repositorio REDA de Sistemas Operativos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#071d36; --blue:#0b4fae; --blue-d:#083b85; --cyan:#bfeff7; --cyan-d:#7fd6e6;
+  --paper:#f4f7fb; --white:#fff; --text:#1c2b3d; --muted:#51647b; --ok:#13795b; --bad:#b3261e;
+  --term:#04121f; --prompt:#5be3a1;
+  --display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --body:'Source Sans 3','Segoe UI',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{font-family:var(--body);color:var(--text);background:var(--paper);line-height:1.6;font-size:18px}
+a{color:var(--blue)}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;border-radius:4px}
+h1,h2,h3{font-family:var(--display);line-height:1.1;color:var(--ink)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+section{padding:72px 0}
+section h2{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:14px}
+.lead{max-width:62ch;color:var(--muted);margin-bottom:34px}
+
+/* Barra */
+header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-bottom:1px solid #dbe4ef}
+header .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;gap:16px}
+.brand{font-family:var(--display);font-weight:800;color:var(--blue);text-decoration:none;font-size:1.15rem;white-space:nowrap}
+nav{display:flex;gap:4px;overflow-x:auto}
+nav a{text-decoration:none;color:var(--text);font-size:.95rem;padding:6px 11px;border-radius:99px;white-space:nowrap}
+nav a:hover,nav a.on{background:var(--cyan);color:var(--ink)}
+
+/* Hero */
+.hero{background:var(--ink);color:#fff;padding:70px 0 80px;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(900px 400px at 85% 0,rgba(11,79,174,.65),transparent 70%)}
+.hero .wrap{position:relative;display:grid;grid-template-columns:1fr 1.05fr;gap:44px;align-items:center}
+.hero h1{color:#fff;font-size:clamp(2.4rem,6vw,4.1rem);font-weight:800;letter-spacing:-.02em}
+.hero p{color:#cfe0f3;margin:18px 0 26px;max-width:46ch}
+.hero .tag{display:inline-block;background:var(--cyan);color:var(--ink);font-weight:600;font-size:.9rem;padding:5px 14px;border-radius:99px;margin-bottom:18px}
+.btn{display:inline-block;font:600 1rem var(--body);background:var(--cyan);color:var(--ink);border:0;padding:12px 24px;border-radius:10px;text-decoration:none;cursor:pointer;transition:transform .15s,background .15s}
+.btn:hover{background:#fff;transform:translateY(-2px)}
+.btn.ghost{background:transparent;color:#fff;border:2px solid var(--cyan-d);margin-left:10px}
+.btn.ghost:hover{background:rgba(255,255,255,.12)}
+
+/* Terminal */
+.term{background:var(--term);border:1px solid #1e3a5a;border-radius:12px;box-shadow:0 24px 60px rgba(0,0,0,.45);font-family:var(--mono);font-size:.86rem}
+.term-bar{display:flex;gap:7px;align-items:center;padding:10px 14px;border-bottom:1px solid #16304d;color:#7f9bb8;font-size:.78rem}
+.term-bar i{width:11px;height:11px;border-radius:50%;background:#2c4a6b;display:block}
+.term-bar span{margin-left:8px}
+#out{height:270px;overflow-y:auto;padding:14px;color:#d6e6f7;white-space:pre-wrap;word-break:break-word}
+#out .p{color:var(--prompt)}
+#out .h{color:var(--cyan)}
+.term-in{display:flex;gap:8px;padding:0 14px 14px;color:var(--prompt)}
+#cmd{flex:1;background:transparent;border:0;color:#fff;font:inherit;outline:none;min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 14px}
+.chips button{font:inherit;font-size:.78rem;background:#0c2540;color:var(--cyan);border:1px solid #1e3a5a;border-radius:6px;padding:3px 9px;cursor:pointer}
+.chips button:hover{background:#133458}
+
+/* Objetivo */
+.objetivo{background:var(--white);border-left:8px solid var(--blue);padding:28px 30px;border-radius:0 14px 14px 0;font-size:1.15rem;max-width:860px;box-shadow:0 2px 14px rgba(7,29,54,.06)}
+
+/* 5W+H */
+.w-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.w-tabs button{font:600 1rem var(--display);background:var(--white);color:var(--ink);border:2px solid #cddbea;border-radius:10px;padding:10px 20px;cursor:pointer;transition:all .15s}
+.w-tabs button:hover{border-color:var(--blue)}
+.w-tabs button[aria-selected=true]{background:var(--blue);color:#fff;border-color:var(--blue)}
+.w-panel{background:var(--white);border-radius:16px;padding:30px;box-shadow:0 2px 14px rgba(7,29,54,.06);min-height:250px}
+.w-panel h3{font-size:1.7rem;margin-bottom:6px}
+.w-panel .q{color:var(--muted);margin-bottom:20px}
+.dims{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.dim{background:var(--paper);border-top:4px solid var(--blue);border-radius:8px;padding:14px 16px}
+.dim:nth-child(2){border-color:var(--cyan-d)}
+.dim:nth-child(3){border-color:var(--ink)}
+.dim b{font-family:var(--display);display:block;margin-bottom:4px;color:var(--ink)}
+.dim span{font-size:.97rem}
+
+/* Módulos */
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.filters button{font:600 .95rem var(--body);background:var(--white);border:2px solid #cddbea;border-radius:99px;padding:6px 16px;cursor:pointer;color:var(--text)}
+.filters button[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.mods{display:grid;gap:10px}
+.mod{background:var(--white);border-radius:12px;box-shadow:0 2px 10px rgba(7,29,54,.05);overflow:hidden}
+.mod[hidden]{display:none}
+.mod>button{width:100%;display:flex;align-items:center;gap:16px;background:none;border:0;padding:18px 22px;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.mod .code{font-family:var(--mono);font-weight:600;color:var(--blue);min-width:34px}
+.mod .name{font-family:var(--display);font-weight:700;font-size:1.15rem;flex:1;color:var(--ink)}
+.lvl{font-size:.82rem;font-weight:600;padding:3px 11px;border-radius:99px}
+.lvl.Básico{background:#d9f4e7;color:#0c5a41}.lvl.Intermedio{background:#fff0c9;color:#7a5600}.lvl.Avanzado{background:#fbdad7;color:#8c1d16}
+.chev{transition:transform .2s;color:var(--muted)}
+.mod.open .chev{transform:rotate(180deg)}
+.mod-body{display:none;padding:0 22px 20px 72px;color:var(--text)}
+.mod.open .mod-body{display:block}
+.mod-body dl{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;margin-top:6px}
+.mod-body dt{font-weight:600;color:var(--muted)}
+.soon{display:inline-block;margin-top:10px;font-size:.9rem;background:var(--cyan);padding:3px 12px;border-radius:99px;color:var(--ink)}
+
+/* Medios del módulo */
+.mb{margin-top:18px}
+.mb h4{font-family:var(--display);font-size:1.05rem;margin:20px 0 8px;color:var(--ink)}
+.info{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
+.step{flex:1;min-width:130px;background:var(--cyan);border-radius:12px;padding:14px;text-align:center}
+.step .ic{font-size:2rem;line-height:1}
+.step b{display:block;font-family:var(--display);margin:6px 0 2px;color:var(--ink)}
+.step span{font-size:.9rem;color:var(--text)}
+.arr{align-self:center;color:var(--blue);font-weight:700}
+.dl{display:inline-block;margin-top:14px;background:var(--blue);color:#fff;padding:8px 18px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.95rem}
+@media(max-width:860px){.arr{display:none}}
+
+/* Quiz */
+.quiz{background:var(--ink);color:#fff;border-radius:18px;padding:34px;max-width:760px}
+.quiz h3{color:#fff;font-size:1.4rem;margin-bottom:6px}
+.qprog{height:6px;background:#17365a;border-radius:99px;margin:14px 0 24px;overflow:hidden}
+.qprog div{height:100%;width:0;background:var(--prompt);transition:width .3s}
+.opts{display:grid;gap:10px;margin-top:16px}
+.opts button{text-align:left;font:inherit;color:#fff;background:#0f2c4f;border:2px solid #1e4272;border-radius:10px;padding:12px 16px;cursor:pointer}
+.opts button:hover:not(:disabled){border-color:var(--cyan)}
+.opts button.right{background:#0f5a43;border-color:var(--prompt)}
+.opts button.wrong{background:#6a1d1a;border-color:#ff8f87}
+.fb{margin-top:16px;min-height:52px;color:#cfe0f3}
+.quiz .btn{margin-top:12px}
+.score{font-family:var(--display);font-size:3rem;color:var(--prompt)}
+
+/* Video */
+.video{aspect-ratio:16/9;max-width:860px;background:var(--white);border:0;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(7,29,54,.1)}
+.video iframe{width:100%;height:100%;border:0;border-radius:16px}
+
+/* Licencias y equipo */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.card{background:var(--white);border-radius:14px;padding:26px;box-shadow:0 2px 12px rgba(7,29,54,.06)}
+.card h3{font-size:1.3rem;margin-bottom:10px}
+.card p+p{margin-top:10px}
+footer{background:var(--ink);color:#a9bfd6;text-align:center;padding:30px 20px;font-size:.95rem}
+footer a{color:var(--cyan)}
+
+@media(max-width:860px){
+  .hero .wrap,.two,.dims{grid-template-columns:1fr}
+  .mod-body{padding-left:22px}
+  section{padding:52px 0}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="#inicio">SO Lab Abierto</a>
+    <nav aria-label="Principal">
+      <a href="#objetivo">Objetivo</a><a href="#cinco">5W+H</a><a href="#modulos">Módulos</a>
+      <a href="#quiz">Autoevaluación</a><a href="#video">Video pitch</a><a href="#licencias">Licencias</a><a href="#equipo">Equipo</a>
+    </nav>
+  </div>
+</header>
+
+<!-- INICIO -->
+<div class="hero" id="inicio">
+  <div class="wrap">
+    <div>
+      <span class="tag">Técnico en Sistemas, Instituto CENIS de Colombia</span>
+      <h1>Los sistemas operativos, aprendidos haciendo</h1>
+      <p>Repositorio de Recursos Educativos Digitales Abiertos (REDA) con guías de laboratorio, retos e imágenes explicativas para instalar, administrar y dar soporte a Windows y Linux.</p>
+      <a class="btn" href="#modulos">Explorar los módulos</a>
+      <a class="btn ghost" href="#quiz">Probar un quiz</a>
+    </div>
+    <div class="term" aria-label="Terminal interactiva">
+      <div class="term-bar"><i></i><i></i><i></i><span>terminal@cenis: escribe un comando</span></div>
+      <div id="out" role="log" aria-live="polite"></div>
+      <label class="term-in"><span>$</span><input id="cmd" type="text" autocomplete="off" spellcheck="false" aria-label="Comando"></label>
+      <div class="chips" id="chips"></div>
+    </div>
+  </div>
+</div>
+
+<!-- OBJETIVO -->
+<section id="objetivo">
+  <div class="wrap">
+    <h2>Objetivo del proyecto</h2>
+    <p class="objetivo">Ofrecer a los estudiantes del Técnico en Sistemas del Instituto CENIS de Colombia un repositorio de recursos abiertos para aprender a instalar, configurar, administrar y dar soporte a sistemas operativos, mediante guías de laboratorio, imágenes ilustrativas, retos prácticos y autoevaluaciones accesibles desde cualquier dispositivo.</p>
+  </div>
+</section>
+
+<!-- 5W+H -->
+<section id="cinco" style="background:var(--white)">
+  <div class="wrap">
+    <h2>La propuesta en seis preguntas</h2>
+    <p class="lead">Elige una pregunta del modelo 5W+H y mira cómo responde el proyecto desde lo pedagógico, lo tecnológico y la gestión.</p>
+    <div class="w-tabs" role="tablist" id="wtabs"></div>
+    <div class="w-panel" id="wpanel" role="tabpanel" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- MÓDULOS -->
+<section id="modulos">
+  <div class="wrap">
+    <h2>Módulos del repositorio</h2>
+    <p class="lead">Siete módulos que van de lo básico a lo avanzado. Filtra por nivel y abre cada uno para ver su ficha.</p>
+    <div class="filters" id="filters"></div>
+    <div class="mods" id="mods"></div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz" style="background:var(--white)">
+  <div class="wrap">
+    <h2>Autoevaluación de ejemplo</h2>
+    <p class="lead">Un recurso del Módulo 1 funcionando: tres preguntas rápidas con retroalimentación inmediata.</p>
+    <div class="quiz" id="quizbox"></div>
+  </div>
+</section>
+
+<!-- VIDEO -->
+<section id="video">
+  <div class="wrap">
+    <h2>Video pitch</h2>
+    <p class="lead">Tres minutos para conocer la propuesta completa.</p>
+    <div class="video" id="videobox">
+      <iframe src="https://www.youtube.com/embed/z8vrlaoNX-E" title="Video pitch SO Lab Abierto" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- LICENCIAS Y EQUIPO -->
+<section id="licencias" style="background:var(--white)">
+  <div class="wrap">
+    <h2>Licencias y derechos de autor</h2>
+    <div class="two">
+      <div class="card">
+        <h3>Licencia abierta</h3>
+        <p>Los recursos están bajo licencia <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" target="_blank" rel="noopener">Creative Commons Atribución-CompartirIgual 4.0 (CC BY-SA 4.0)</a>, salvo que se indique lo contrario. Puedes copiarlos, adaptarlos y compartirlos citando la autoría y manteniendo la misma licencia.</p>
+        <p>Se respeta la Ley 23 de 1982 y la Ley 1915 de 2018. Los materiales de terceros conservan su licencia original.</p>
+      </div>
+      <div class="card">
+        <h3>Uso de inteligencia artificial y fuentes</h3>
+        <p>Se utilizó <b>Gemini</b> como apoyo para la edición de textos del repositorio. El equipo revisó y validó minuciosamente todo el contenido.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="equipo">
+  <div class="wrap">
+    <h2>Equipo</h2>
+    <div class="card" style="max-width:640px">
+      <p><b>Integrantes:</b></p>
+      <ul style="margin-left: 20px; margin-bottom: 12px;">
+        <li>Laura Daniela Cardona Cossio</li>
+        <li>Jackeline del Carmen Celis Figueroa</li>
+        <li>Cesia Esther Córdoba Miranda</li>
+        <li>Jeimy Johanna Tapias Rincón</li>
+      </ul>
+      <p><b>Programa:</b> Maestría en Gestión de Recursos Educativos Digitales</p>
+      <p><b>Docente:</b> Dora Nuvia Bayona Pinto</p>
+    </div>
+  </div>
+</section>
+
+<footer>SO Lab Abierto, Instituto CENIS de Colombia. Contenido bajo licencia <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.es" target="_blank" rel="noopener">CC BY-SA 4.0</a>.</footer>
+
+<script>
+/* ===== DATOS ===== */
+const VIDEO_ID = "z8vrlaoNX-E";
+
+const W = [
+ {t:"¿Qué?", q:"¿Qué es el repositorio y qué recursos incluye?",
+  p:"Un repositorio con guías de laboratorio, retos y quizzes, organizado en siete módulos.",
+  te:"Sitio en Google Sites con recursos en Drive y Forms, optimizado para consulta móvil.",
+  g:"Recursos con licencia CC BY-SA que cualquier docente puede reutilizar y mejorar."},
+ {t:"¿Por qué?", q:"¿Qué necesidad atiende en la institución?",
+  p:"Los estudiantes necesitan practicar y el material está disperso. Aprender haciendo mejora la comprensión.",
+  te:"Las máquinas virtuales permiten practicar sin dañar equipos reales ni depender del laboratorio.",
+  g:"Reduce la brecha de acceso a equipos y centraliza el material educativo."},
+ {t:"¿Cuándo?", q:"¿En qué plazos o etapas se implementa?",
+  p:"Diseño de rutas y retos (meses 1-2), producción de contenidos (3-5) y evaluación con estudiantes (6).",
+  te:"Se publica una versión mínima al finalizar la fase 1 y se amplía en cada fase.",
+  g:"Fase 1 diagnóstico y diseño, fase 2 producción, fase 3 piloto y mejora."},
+ {t:"¿Quién?", q:"¿Quiénes son responsables, usuarios y beneficiarios?",
+  p:"Usuarios: estudiantes del técnico. Docentes: guían y adaptan las actividades.",
+  te:"Un equipo técnico mantiene el sitio y actualiza los recursos.",
+  g:"Responsables: docentes del programa. Beneficiarios: estudiantes e Instituto."},
+ {t:"¿Cómo?", q:"¿Cuál es la estrategia o metodología?",
+  p:"Aprendizaje basado en retos y proyectos por cada tema.",
+  te:"Google Sites, Drive, Forms y VirtualBox: herramientas gratuitas y livianas.",
+  g:"Comité docente que revisa calidad, licencias y plan de actualización semestral."},
+ {t:"¿Dónde?", q:"¿En qué contextos o escenarios tendría impacto?",
+  p:"En el aula, en el laboratorio y en la casa, con actividades que se pueden hacer a distancia.",
+  te:"Acceso web desde computador o celular, con recursos livianos.",
+  g:"Se puede replicar en otras sedes o programas técnicos del Instituto."}
+];
+
+const M = [
+ {c:"M1",n:"Fundamentos",l:"Básico",d:"2 h",o:"Explicar qué es un sistema operativo y sus funciones: procesos, memoria y archivos.",r:"Infografía y quiz",ready:true},
+ {c:"M2",n:"Instalación y máquinas virtuales",l:"Básico",d:"3 h",o:"Instalar un sistema operativo en una máquina virtual y configurar el arranque.",r:"Guía paso a paso",ready:true},
+ {c:"M3",n:"Windows",l:"Intermedio",d:"3 h",o:"Administrar usuarios, permisos y servicios en Windows.",r:"Guía y reto",ready:false},
+ {c:"M4",n:"Linux",l:"Intermedio",d:"4 h",o:"Usar la terminal para gestionar archivos, usuarios, permisos y paquetes.",r:"Cheat sheet y práctica",ready:true},
+ {c:"M5",n:"Administración y seguridad",l:"Intermedio",d:"3 h",o:"Aplicar respaldos, actualizaciones y buenas prácticas de seguridad.",r:"Checklist y caso",ready:false},
+ {c:"M6",n:"Soporte técnico",l:"Avanzado",d:"3 h",o:"Diagnosticar y resolver fallas comunes de software y configuración.",r:"Casos reales",ready:false},
+ {c:"M7",n:"Evaluación",l:"Avanzado",d:"2 h",o:"Demostrar lo aprendido con un proyecto integrador.",r:"Quiz y rúbrica",ready:true}
+];
+
+const QZ = [
+ {q:"¿Cuál es la función principal del kernel?",o:["Diseñar páginas web","Administrar los recursos del hardware y los procesos","Editar documentos","Conectarse a internet"],a:1,e:"El kernel es el núcleo: gestiona CPU, memoria y dispositivos."},
+ {q:"¿Qué comando de Linux muestra el contenido de una carpeta?",o:["cd","rm","ls","mkdir"],a:2,e:"ls lista archivos y carpetas. cd cambia de carpeta."},
+ {q:"¿Por qué conviene practicar en una máquina virtual?",o:["Porque es más rápida que un equipo real","Para no dañar el equipo real si algo sale mal","Porque no necesita memoria","Porque no requiere licencia"],a:1,e:"Una máquina virtual aísla las pruebas del sistema real."}
+];
+
+/* ===== TERMINAL ===== */
+const out=document.getElementById('out'), cmd=document.getElementById('cmd');
+const CMDS={
+ help:"Comandos: help, whoami, ls, modulos, cat objetivo, uname, date, clear",
+ whoami:"estudiante@cenis, Técnico en Sistemas",
+ ls:"M1-fundamentos  M2-instalacion  M3-windows  M4-linux\nM5-seguridad  M6-soporte  M7-evaluacion",
+ modulos:"Siete módulos: de Fundamentos a Evaluación. Baja a la sección Módulos.",
+ "cat objetivo":"Aprender a instalar, configurar, administrar y dar soporte a sistemas operativos con recursos abiertos.",
+ uname:"SO Lab Abierto 1.0 (Instituto CENIS de Colombia)",
+ date:()=>new Date().toLocaleString('es-CO')
+};
+function print(t,cls){const d=document.createElement('div');if(cls)d.className=cls;d.textContent=t;out.appendChild(d);out.scrollTop=out.scrollHeight}
+print("Bienvenido a SO Lab Abierto. Escribe help o toca un comando.","h");
+cmd.addEventListener('keydown',e=>{
+ if(e.key!=='Enter')return;
+ run(cmd.value.trim());cmd.value='';
+});
+function run(c){
+ if(!c)return;
+ print("$ "+c,"p");
+ const k=c.toLowerCase();
+ if(k==='clear'){out.innerHTML='';return}
+ const r=CMDS[k];
+ if(r)print(typeof r==='function'?r():r);
+ else print("Comando no encontrado: "+c+". Escribe help para ver los disponibles.");
+}
+const chips=document.getElementById('chips');
+["help","ls","whoami","cat objetivo","uname"].forEach(c=>{
+ const b=document.createElement('button');b.textContent=c;b.onclick=()=>run(c);chips.appendChild(b);
+});
+
+/* ===== 5W+H ===== */
+const tabs=document.getElementById('wtabs'), panel=document.getElementById('wpanel');
+function showW(i){
+ [...tabs.children].forEach((b,j)=>b.setAttribute('aria-selected',i===j));
+ const w=W[i];
+ panel.innerHTML=`<h3>${w.t}</h3><p class="q">${w.q}</p>
+ <div class="dims">
+  <div class="dim"><b>Pedagógica</b><span>${w.p}</span></div>
+  <div class="dim"><b>Tecnológica</b><span>${w.te}</span></div>
+  <div class="dim"><b>Gestión</b><span>${w.g}</span></div>
+ </div>`;
+}
+W.forEach((w,i)=>{
+ const b=document.createElement('button');b.textContent=w.t;b.setAttribute('role','tab');
+ b.onclick=()=>showW(i);tabs.appendChild(b);
+});
+showW(0);
+
+/* ===== MEDIOS POR MÓDULO ===== */
+const MEDIA={
+ M1:{guia:"", pts:[["⚙️","Procesos","Ejecutan los programas"],["🧠","Memoria","Reparte la RAM"],["📁","Archivos","Organiza los datos"],["🔌","Dispositivos","Controla el hardware"]]},
+ M2:{guia:"", pts:[["💻","Máquina virtual","Un equipo dentro del equipo"],["💿","Imagen ISO","El instalador del sistema"],["🗂️","Particiones","Divide el disco"],["🚀","Arranque","Inicia el sistema"]]},
+ M3:{guia:"", pts:[["👤","Usuarios","Cuentas y grupos"],["🔐","Permisos","Quién accede a qué"],["🛠️","Servicios","Programas en segundo plano"],["⌨️","PowerShell","Automatiza tareas"]]},
+ M4:{guia:"", pts:[["⌨️","Terminal","ls, cd, pwd"],["📂","Archivos","cp, mv, rm"],["🔑","Permisos","chmod, chown"],["📦","Paquetes","apt install"]]},
+ M5:{guia:"", pts:[["💾","Respaldos","Copia de seguridad"],["🔄","Actualizaciones","Parches de seguridad"],["🛡️","Protección","Antivirus y firewall"],["🔒","Contraseñas","Acceso seguro"]]},
+ M6:{guia:"", pts:[["🔎","Identificar","Qué síntoma hay"],["🧪","Diagnosticar","Pruebas y registros"],["🔧","Solucionar","Aplicar la corrección"],["📝","Documentar","Registrar el caso"]]},
+ M7:{guia:"", pts:[["📋","Planear","Define el proyecto"],["🖥️","Instalar","Monta el sistema"],["⚙️","Configurar","Usuarios y seguridad"],["✅","Entregar","Evidencia y quiz"]]}
+};
+
+function media(m){
+ const d=MEDIA[m.c];if(!d)return'';
+ const info=d.pts.map((p,i)=>`<div class="step"><div class="ic">${p[0]}</div><b>${p[1]}</b><span>${p[2]}</span></div>${i<d.pts.length-1?'<div class="arr">→</div>':''}`).join('');
+ return `<div class="mb"><h4>Ideas clave</h4><div class="info">${info}</div>
+ ${d.guia?`<a class="dl" href="${d.guia}" target="_blank" rel="noopener">Descargar guía (PDF)</a>`:''}</div>`;
+}
+
+/* ===== MÓDULOS ===== */
+const mods=document.getElementById('mods'), filters=document.getElementById('filters');
+M.forEach(m=>{
+ const el=document.createElement('div');el.className='mod';el.dataset.l=m.l;
+ el.innerHTML=`<button aria-expanded="false"><span class="code">${m.c}</span><span class="name">${m.n}</span><span class="lvl ${m.l}">${m.l}</span><span class="chev">▾</span></button>
+ <div class="mod-body"><dl><dt>Objetivo</dt><dd>${m.o}</dd><dt>Duración</dt><dd>${m.d}</dd><dt>Recurso</dt><dd>${m.r}</dd><dt>Licencia</dt><dd>CC BY-SA 4.0</dd></dl>
+ ${media(m)}
+ ${m.ready?'':'<span class="soon">Próximamente, fase 2 del proyecto</span>'}</div>`;
+ const btn=el.querySelector('button');
+ btn.onclick=()=>{const o=el.classList.toggle('open');btn.setAttribute('aria-expanded',o)};
+ mods.appendChild(el);
+});
+["Todos","Básico","Intermedio","Avanzado"].forEach((f,i)=>{
+ const b=document.createElement('button');b.textContent=f;b.setAttribute('aria-pressed',i===0);
+ b.onclick=()=>{
+  [...filters.children].forEach(x=>x.setAttribute('aria-pressed',x===b));
+  [...mods.children].forEach(m=>m.hidden=(f!=='Todos'&&m.dataset.l!==f));
+ };
+ filters.appendChild(b);
+});
+
+/* ===== QUIZ ===== */
+const qb=document.getElementById('quizbox');
+let qi=0,score=0;
+function renderQ(){
+ if(qi>=QZ.length){
+  qb.innerHTML=`<h3>Resultado</h3><div class="score">${score}/${QZ.length}</div>
+  <p>${score===QZ.length?"Excelente, dominas los fundamentos.":"Buen intento. Repasa el Módulo 1 y vuelve a probar."}</p>
+  <button class="btn" id="again">Reiniciar</button>`;
+  document.getElementById('again').onclick=()=>{qi=0;score=0;renderQ()};
+  return;
+ }
+ const q=QZ[qi];
+ qb.innerHTML=`<h3>Pregunta ${qi+1} de ${QZ.length}</h3>
+ <div class="qprog"><div style="width:${qi/QZ.length*100}%"></div></div>
+ <p>${q.q}</p><div class="opts"></div><div class="fb" aria-live="polite"></div>`;
+ const box=qb.querySelector('.opts');
+ q.o.forEach((t,i)=>{
+  const b=document.createElement('button');b.textContent=t;
+  b.onclick=()=>{
+   [...box.children].forEach((x,j)=>{x.disabled=true;if(j===q.a)x.classList.add('right')});
+   if(i===q.a){score++;qb.querySelector('.fb').textContent="Correcto. "+q.e}
+   else{b.classList.add('wrong');qb.querySelector('.fb').textContent="No exactamente. "+q.e}
+   const n=document.createElement('button');n.className='btn';n.textContent=qi===QZ.length-1?'Ver resultado':'Siguiente';
+   n.onclick=()=>{qi++;renderQ()};qb.appendChild(n);
+  };
+  box.appendChild(b);
+ });
+}
+renderQ();
+
+/* ===== MENÚ ACTIVO ===== */
+const links=[...document.querySelectorAll('nav a')];
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+ if(e.isIntersecting)links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id));
+}),{rootMargin:'-45% 0px -50% 0px'});
+document.querySelectorAll('section[id]').forEach(s=>io.observe(s));
+</script>
+</body>
+</html>
